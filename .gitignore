@@ -35,6 +35,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# generated prisma schema (dibuat oleh scripts/db-schema.mjs)
+/prisma/schema.active.prisma
 
 # vercel
 .vercel

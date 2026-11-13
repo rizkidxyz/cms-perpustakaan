@@ -2,42 +2,23 @@ import "dotenv/config";
 
 import { defineConfig } from "prisma/config";
 
-const requiredEnv = [
-  "DATABASE_HOST",
-  "DATABASE_PORT",
-  "DATABASE_NAME",
-  "DATABASE_USER",
-];
+import {
+  getDirectDatabaseUrl,
+  getMigrationsPath,
+  getSchemaPath,
+} from "./lib/db-config.js";
 
-for (const key of requiredEnv) {
-  if (!process.env[key]) {
-    throw new Error(`Environment variable ${key} belum diatur.`);
-  }
-}
-
-const databaseName = process.env.DATABASE_NAME;
-
-if (!/^[a-zA-Z0-9_]+$/.test(databaseName)) {
-  throw new Error("Nama database tidak valid.");
-}
-
-const databaseUrl = new URL("mysql://localhost");
-
-databaseUrl.hostname = process.env.DATABASE_HOST;
-databaseUrl.port = process.env.DATABASE_PORT;
-databaseUrl.username = process.env.DATABASE_USER;
-databaseUrl.password = process.env.DATABASE_PASSWORD || "";
-databaseUrl.pathname = `/${databaseName}`;
-
+// Prisma CLI memakai koneksi direct (tanpa pooler) supaya operasi DDL aman.
 export default defineConfig({
-  schema: "prisma/schema.prisma",
+  schema: getSchemaPath(),
 
   migrations: {
-    path: "prisma/migrations",
+    path: getMigrationsPath(),
     seed: "tsx prisma/seed.mjs",
   },
 
   datasource: {
-    url: databaseUrl.toString(),
+    url: getDirectDatabaseUrl(),
+    shadowDatabaseUrl: process.env.SHADOW_DATABASE_URL || undefined,
   },
 });

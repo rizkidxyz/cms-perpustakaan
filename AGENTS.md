@@ -45,8 +45,8 @@ Nama resmi perpustakaan belum ditetapkan di konfigurasi. Jangan mengarang nama, 
 - Styling reusable menggunakan `@layer components` dan `@apply` di `app/globals.css`.
 - `next-themes` untuk light/dark/system theme.
 - Remix Icon untuk ikon.
-- MySQL sebagai database.
-- Prisma ORM 7.x dengan `@prisma/adapter-mariadb` dan package `mariadb`.
+- Database dapat diganti lewat `.env` (`DB_PROVIDER`): MySQL/MariaDB, PostgreSQL, atau Neon.
+- Prisma ORM 7.x dengan driver adapter: `@prisma/adapter-mariadb`, `@prisma/adapter-pg`, dan `@prisma/adapter-neon`.
 - Node.js runtime untuk kode server yang menggunakan Prisma atau Argon2. Jangan menambahkan konfigurasi route `runtime` jika `cacheComponents` aktif.
 
 Sebelum mengubah versi dependency atau konfigurasi build, periksa `package.json`, lockfile, dan file konfigurasi aktual. Jangan melakukan upgrade major secara sepihak.
@@ -118,16 +118,20 @@ controllers/
 
 lib/
   auth.js
+  db-config.js
   prisma.js
   security.js
 
 prisma/
   schema.prisma
-  migrations/
+  schema.active.prisma
+  migrations-mysql/
+  migrations-postgresql/
   seed.mjs
 
 scripts/
-  ensure-database.mjs
+  db-check.mjs
+  db-schema.mjs
 
 public/
   images/
@@ -260,12 +264,16 @@ Footer:
 
 ## 9. Database dan Prisma
 
-Database MySQL:
+Koneksi database dipilih lewat `.env`. Satu set kode yang sama bisa dipakai untuk MySQL/MariaDB, PostgreSQL biasa, atau Neon tanpa mengubah source.
 
-- Nama database: `landingpageperpus`.
-- Konfigurasi koneksi berada di `.env`, bukan ditulis langsung pada source code.
-- Prisma schema berada di `prisma/schema.prisma`.
-- Prisma CLI config berada di `prisma.config.mjs`.
+- `DB_PROVIDER` menentukan provider: `mysql` (alias `mariadb`), `postgresql` (alias `pg`/`postgres`), atau `neon`.
+- Isi salah satu sumber koneksi: `DB_URL` (connection string lengkap) atau parameter `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_SSLMODE`. Minimal salah satunya harus terisi.
+- `DB_URL_DIRECT` opsional. Dipakai Prisma CLI untuk operasi DDL. Di Neon, isi endpoint tanpa `-pooler`, atau biarkan kosong supaya `-pooler` dilepas otomatis dari `DB_URL`.
+- `lib/db-config.js` menjadi pusat logika provider dan URL, dipakai oleh runtime aplikasi, Prisma CLI, dan script.
+- `lib/prisma.js` memilih driver adapter saat runtime sesuai `DB_PROVIDER`.
+- Prisma CLI config berada di `prisma.config.mjs`; Prisma CLI selalu memakai koneksi direct.
+- `prisma/schema.prisma` adalah template sumber. `scripts/db-schema.mjs` menyalinnya ke `prisma/schema.active.prisma` sambil menyesuaikan `provider`. File aktif ini yang dipakai Prisma CLI dan bersifat generated (tidak di-commit).
+- Migrasi dipisah per provider: `prisma/migrations-mysql/` dan `prisma/migrations-postgresql/`. `lib/db-config.js` memilih folder sesuai provider.
 - Prisma Client hasil generate berada di `generated/prisma` sesuai konfigurasi generator.
 - Gunakan satu instance Prisma Client untuk menghindari koneksi berlebihan saat development.
 
@@ -273,11 +281,17 @@ Environment variables yang digunakan:
 
 ```env
 APP_URL="http://localhost:3000"
-DATABASE_HOST="127.0.0.1"
-DATABASE_PORT="3306"
-DATABASE_NAME="landingpageperpus"
-DATABASE_USER=""
-DATABASE_PASSWORD=""
+
+DB_PROVIDER="postgresql"
+DB_URL=""
+DB_URL_DIRECT=""
+DB_HOST=""
+DB_PORT=""
+DB_NAME=""
+DB_USER=""
+DB_PASSWORD=""
+DB_SSLMODE="require"
+
 AUTH_SECRET=""
 ADMIN_NAME="Administrator"
 ADMIN_EMAIL=""
@@ -286,14 +300,24 @@ ADMIN_PASSWORD=""
 
 Jangan menambahkan prefix `NEXT_PUBLIC_` pada kredensial atau secret server.
 
+Script `package.json` yang tersedia:
+
+- `npm run db:sync` — generate `prisma/schema.active.prisma` dari `DB_PROVIDER`.
+- `npm run db:check` — tes koneksi database.
+- `npm run db:generate` — sync schema lalu `prisma generate`.
+- `npm run db:migrate` — sync lalu `prisma migrate dev` (untuk development).
+- `npm run db:deploy` — sync lalu `prisma migrate deploy` (untuk production/Neon).
+- `npm run db:seed` — jalankan seed administrator.
+- `npm run db:studio` — buka Prisma Studio.
+- `npm run db:setup` — sync, generate, deploy, dan seed sekaligus.
+
 Aturan migrasi:
 
 - Perubahan schema harus dibuat melalui Prisma Migrate, bukan mengedit database secara manual.
-- Development: `npx prisma migrate dev --name nama_perubahan`.
-- Generate client: `npx prisma generate`.
-- Seed: `npm run db:seed` atau perintah yang sudah terdaftar di `package.json`.
-- Setup awal menggunakan `npm run db:setup` (bootstrap database, migrate, generate, seed).
-- Production menggunakan `prisma migrate deploy`, bukan `migrate dev`.
+- Selalu ubah `prisma/schema.prisma` (template), lalu jalankan `npm run db:sync`.
+- Development lokal: `npx prisma migrate dev --name nama_perubahan`.
+- Neon dan production: `prisma migrate deploy`, bukan `migrate dev`.
+- Untuk membuat baseline di provider baru, gunakan `prisma migrate diff --from-empty --to-schema prisma/schema.active.prisma --script`, lalu terapkan dengan `migrate deploy`. Jangan pakai `migrate dev` di Neon.
 - Jangan menjalankan `migrate reset`, menghapus migration, atau menghapus database tanpa persetujuan eksplisit.
 - Jangan menjalankan ulang seed dengan asumsi password admin akan diperbarui: seed awal hanya membuat akun jika belum ada. Perubahan password harus memakai prosedur reset yang aman.
 
@@ -396,8 +420,8 @@ Yang telah disepakati atau dibuat:
 - Custom `not-found.js`.
 - Homepage awal dengan hero, pintasan informasi, tentang perpustakaan, placeholder berita/agenda, dan CTA kontak.
 - Animasi homepage: headline hero berganti 4 varian dengan fade, tumpukan 3 kartu gambar berotasi tiap 5 detik (gambar ikut berpindah bersama kartu), dua floating card dan visual about berganti konten dengan fade. Konten diatur di `config/home-content.js`, placeholder gambar di `public/images/hero/`.
-- MySQL database `landingpageperpus`.
-- Prisma ORM 7.10.1 dengan MariaDB driver adapter.
+- Database switchable lewat `DB_PROVIDER`: MySQL/MariaDB, PostgreSQL, atau Neon. Database aktif saat ini: Neon PostgreSQL (`cms_perpustakaan`).
+- Prisma ORM 7.10.1 dengan driver adapter `@prisma/adapter-mariadb`, `@prisma/adapter-pg`, dan `@prisma/adapter-neon`.
 - Schema awal User, Session, LoginAttempt.
 - Bootstrap database dan seed administrator.
 - Login, logout, endpoint pemeriksaan sesi, Argon2id password hash, database-backed sessions, dan role ADMIN/EDITOR.

@@ -172,7 +172,6 @@ export type LoginAttemptOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   keyHash?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
-  _relevance?: Prisma.LoginAttemptOrderByRelevanceInput
 }
 
 export type LoginAttemptWhereUniqueInput = Prisma.AtLeast<{
@@ -244,12 +243,6 @@ export type LoginAttemptUncheckedUpdateManyInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
-export type LoginAttemptOrderByRelevanceInput = {
-  fields: Prisma.LoginAttemptOrderByRelevanceFieldEnum | Prisma.LoginAttemptOrderByRelevanceFieldEnum[]
-  sort: Prisma.SortOrder
-  search: string
-}
-
 export type LoginAttemptCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   keyHash?: Prisma.SortOrder
@@ -276,7 +269,17 @@ export type LoginAttemptSelect<ExtArgs extends runtime.Types.Extensions.Internal
   createdAt?: boolean
 }, ExtArgs["result"]["loginAttempt"]>
 
+export type LoginAttemptSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
+  id?: boolean
+  keyHash?: boolean
+  createdAt?: boolean
+}, ExtArgs["result"]["loginAttempt"]>
 
+export type LoginAttemptSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
+  id?: boolean
+  keyHash?: boolean
+  createdAt?: boolean
+}, ExtArgs["result"]["loginAttempt"]>
 
 export type LoginAttemptSelectScalar = {
   id?: boolean
@@ -411,6 +414,30 @@ export interface LoginAttemptDelegate<ExtArgs extends runtime.Types.Extensions.I
   createMany<T extends LoginAttemptCreateManyArgs>(args?: Prisma.SelectSubset<T, LoginAttemptCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<Prisma.BatchPayload>
 
   /**
+   * Create many LoginAttempts and returns the data saved in the database.
+   * @param {LoginAttemptCreateManyAndReturnArgs} args - Arguments to create many LoginAttempts.
+   * @example
+   * // Create many LoginAttempts
+   * const loginAttempt = await prisma.loginAttempt.createManyAndReturn({
+   *   data: [
+   *     // ... provide data here
+   *   ]
+   * })
+   * 
+   * // Create many LoginAttempts and only return the `id`
+   * const loginAttemptWithIdOnly = await prisma.loginAttempt.createManyAndReturn({
+   *   select: { id: true },
+   *   data: [
+   *     // ... provide data here
+   *   ]
+   * })
+   * Note, that providing `undefined` is treated as the value not being there.
+   * Read more here: https://pris.ly/d/null-undefined
+   * 
+   */
+  createManyAndReturn<T extends LoginAttemptCreateManyAndReturnArgs>(args?: Prisma.SelectSubset<T, LoginAttemptCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LoginAttemptPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+  /**
    * Delete a LoginAttempt.
    * @param {LoginAttemptDeleteArgs} args - Arguments to delete one LoginAttempt.
    * @example
@@ -473,6 +500,36 @@ export interface LoginAttemptDelegate<ExtArgs extends runtime.Types.Extensions.I
    * 
    */
   updateMany<T extends LoginAttemptUpdateManyArgs>(args: Prisma.SelectSubset<T, LoginAttemptUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<Prisma.BatchPayload>
+
+  /**
+   * Update zero or more LoginAttempts and returns the data updated in the database.
+   * @param {LoginAttemptUpdateManyAndReturnArgs} args - Arguments to update many LoginAttempts.
+   * @example
+   * // Update many LoginAttempts
+   * const loginAttempt = await prisma.loginAttempt.updateManyAndReturn({
+   *   where: {
+   *     // ... provide filter here
+   *   },
+   *   data: [
+   *     // ... provide data here
+   *   ]
+   * })
+   * 
+   * // Update zero or more LoginAttempts and only return the `id`
+   * const loginAttemptWithIdOnly = await prisma.loginAttempt.updateManyAndReturn({
+   *   select: { id: true },
+   *   where: {
+   *     // ... provide filter here
+   *   },
+   *   data: [
+   *     // ... provide data here
+   *   ]
+   * })
+   * Note, that providing `undefined` is treated as the value not being there.
+   * Read more here: https://pris.ly/d/null-undefined
+   * 
+   */
+  updateManyAndReturn<T extends LoginAttemptUpdateManyAndReturnArgs>(args: Prisma.SelectSubset<T, LoginAttemptUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$LoginAttemptPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
 
   /**
    * Create or update one LoginAttempt.
@@ -879,6 +936,25 @@ export type LoginAttemptCreateManyArgs<ExtArgs extends runtime.Types.Extensions.
 }
 
 /**
+ * LoginAttempt createManyAndReturn
+ */
+export type LoginAttemptCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the LoginAttempt
+   */
+  select?: Prisma.LoginAttemptSelectCreateManyAndReturn<ExtArgs> | null
+  /**
+   * Omit specific fields from the LoginAttempt
+   */
+  omit?: Prisma.LoginAttemptOmit<ExtArgs> | null
+  /**
+   * The data used to create many LoginAttempts.
+   */
+  data: Prisma.LoginAttemptCreateManyInput | Prisma.LoginAttemptCreateManyInput[]
+  skipDuplicates?: boolean
+}
+
+/**
  * LoginAttempt update
  */
 export type LoginAttemptUpdateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -904,6 +980,32 @@ export type LoginAttemptUpdateArgs<ExtArgs extends runtime.Types.Extensions.Inte
  * LoginAttempt updateMany
  */
 export type LoginAttemptUpdateManyArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * The data used to update LoginAttempts.
+   */
+  data: Prisma.XOR<Prisma.LoginAttemptUpdateManyMutationInput, Prisma.LoginAttemptUncheckedUpdateManyInput>
+  /**
+   * Filter which LoginAttempts to update
+   */
+  where?: Prisma.LoginAttemptWhereInput
+  /**
+   * Limit how many LoginAttempts to update.
+   */
+  limit?: number
+}
+
+/**
+ * LoginAttempt updateManyAndReturn
+ */
+export type LoginAttemptUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the LoginAttempt
+   */
+  select?: Prisma.LoginAttemptSelectUpdateManyAndReturn<ExtArgs> | null
+  /**
+   * Omit specific fields from the LoginAttempt
+   */
+  omit?: Prisma.LoginAttemptOmit<ExtArgs> | null
   /**
    * The data used to update LoginAttempts.
    */

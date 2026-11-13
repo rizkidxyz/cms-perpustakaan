@@ -1,6 +1,56 @@
 # CMS Konten Perpustakaan — implementasi awal
 
-Paket ini berisi modul konten untuk project Next.js App Router + JavaScript + Tailwind CSS v4 + Prisma 7 + MySQL yang sudah memiliki autentikasi `lib/auth.js` dan Prisma Client di `lib/prisma.js`.
+Paket ini berisi modul konten untuk project Next.js App Router + JavaScript + Tailwind CSS v4 + Prisma 7 dengan database yang bisa diganti lewat `.env` (MySQL/MariaDB, PostgreSQL, atau Neon) dan sudah memiliki autentikasi `lib/auth.js` serta Prisma Client di `lib/prisma.js`.
+
+## 0. Database switchable (MySQL / PostgreSQL / Neon)
+
+Koneksi database dipilih lewat environment variable, bukan di source code. Satu set kode yang sama bisa dipakai untuk MySQL/MariaDB, PostgreSQL biasa, atau Neon.
+
+Isi `.env` mengikuti `.env.example`:
+
+```env
+DB_PROVIDER="postgresql"   # mysql | postgresql | neon
+DB_URL=""                  # connection string lengkap (opsional)
+DB_URL_DIRECT=""           # opsional, dipakai Prisma CLI (Neon: tanpa -pooler)
+DB_HOST=""
+DB_PORT=""
+DB_NAME=""
+DB_USER=""
+DB_PASSWORD=""
+DB_SSLMODE="require"
+```
+
+- Isi **salah satu**: `DB_URL`, atau parameter `DB_HOST`, `DB_NAME`, `DB_USER` (+ `DB_PASSWORD`, `DB_PORT`, `DB_SSLMODE`). Minimal salah satunya harus terisi.
+- `DB_URL_DIRECT` hanya dipakai Prisma CLI untuk operasi DDL. Di Neon, kalau dibiarkan kosong, akhiran `-pooler` dilepas otomatis dari `DB_URL`.
+- Aplikasi memakai koneksi pooled (boleh `-pooler`); Prisma CLI memakai koneksi direct.
+
+Pusat logika provider ada di `lib/db-config.js`; pemilihan driver adapter saat runtime ada di `lib/prisma.js`.
+
+Script `package.json`:
+
+| Script | Fungsi |
+| --- | --- |
+| `npm run db:sync` | Generate `prisma/schema.active.prisma` dari `DB_PROVIDER` |
+| `npm run db:check` | Tes koneksi database |
+| `npm run db:generate` | Sync schema lalu `prisma generate` |
+| `npm run db:migrate` | Sync lalu `prisma migrate dev` (development lokal) |
+| `npm run db:deploy` | Sync lalu `prisma migrate deploy` (Neon/production) |
+| `npm run db:seed` | Jalankan seed administrator |
+| `npm run db:studio` | Buka Prisma Studio |
+| `npm run db:setup` | Sync + generate + deploy + seed |
+
+Setup awal (database sudah dibuat, mis. Neon):
+
+```bash
+npm install
+npm run db:setup
+npm run db:check
+```
+
+`prisma/schema.prisma` adalah template sumber. `scripts/db-schema.mjs` menyalinnya ke `prisma/schema.active.prisma` (generated, tidak di-commit) sambil menyesuaikan `provider`. Migrasi dipisah per provider di `prisma/migrations-mysql/` dan `prisma/migrations-postgresql/`.
+
+> Catatan Neon: gunakan `prisma migrate deploy` dan `prisma migrate diff` untuk baseline, jangan `migrate dev`. Role koneksi perlu hak `CREATE` pada schema `public` agar migrasi bisa membuat tabel.
+
 
 ## Keputusan yang diimplementasikan
 
@@ -35,7 +85,7 @@ Paket ini berisi modul konten untuk project Next.js App Router + JavaScript + Ta
 Pastikan project sudah memiliki:
 
 - Next.js App Router dengan `cacheComponents: true`.
-- Prisma ORM 7 dan konfigurasi database MySQL yang sudah berjalan.
+- Prisma ORM 7 dan konfigurasi database yang sudah berjalan (lihat bagian 0).
 - `lib/prisma.js` mengekspor `{ prisma }`.
 - `lib/auth.js` mengekspor `requireStaff()` dan `requireAdmin()`; `requireStaff()` mengembalikan `{ id, name, email, role }`.
 - Package `server-only` telah terpasang.
@@ -66,6 +116,7 @@ generator client {
 Sesudah schema digabung:
 
 ```bash
+npm run db:sync
 npx prisma format
 npx prisma validate
 npx prisma migrate dev --name add_cms_content

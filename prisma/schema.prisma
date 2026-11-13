@@ -1,6 +1,7 @@
-// Merge this schema into prisma/schema.prisma.
-// It preserves the existing User / Session / LoginAttempt authentication tables
-// and adds dynamic categories and CMS posts.
+// Schema sumber (template).
+// scripts/db-schema.mjs menyalin file ini ke prisma/schema.active.prisma lalu
+// mengganti provider sesuai DB_PROVIDER di .env. Provider di bawah ini hanya
+// nilai default, bukan penentu database yang dipakai.
 
 generator client {
   provider = "prisma-client"
@@ -8,7 +9,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
 }
 
 enum UserRole {

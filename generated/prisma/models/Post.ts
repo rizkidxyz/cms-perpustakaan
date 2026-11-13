@@ -262,7 +262,6 @@ export type PostOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   author?: Prisma.UserOrderByWithRelationInput
   category?: Prisma.CategoryOrderByWithRelationInput
-  _relevance?: Prisma.PostOrderByRelevanceInput
 }
 
 export type PostWhereUniqueInput = Prisma.AtLeast<{
@@ -442,12 +441,6 @@ export type PostListRelationFilter = {
 
 export type PostOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
-}
-
-export type PostOrderByRelevanceInput = {
-  fields: Prisma.PostOrderByRelevanceFieldEnum | Prisma.PostOrderByRelevanceFieldEnum[]
-  sort: Prisma.SortOrder
-  search: string
 }
 
 export type PostCountOrderByAggregateInput = {
@@ -863,7 +856,41 @@ export type PostSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   category?: boolean | Prisma.Post$categoryArgs<ExtArgs>
 }, ExtArgs["result"]["post"]>
 
+export type PostSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
+  id?: boolean
+  title?: boolean
+  slug?: boolean
+  excerpt?: boolean
+  content?: boolean
+  coverImage?: boolean
+  status?: boolean
+  visibility?: boolean
+  publishedAt?: boolean
+  authorId?: boolean
+  categoryId?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
+  author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  category?: boolean | Prisma.Post$categoryArgs<ExtArgs>
+}, ExtArgs["result"]["post"]>
 
+export type PostSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
+  id?: boolean
+  title?: boolean
+  slug?: boolean
+  excerpt?: boolean
+  content?: boolean
+  coverImage?: boolean
+  status?: boolean
+  visibility?: boolean
+  publishedAt?: boolean
+  authorId?: boolean
+  categoryId?: boolean
+  createdAt?: boolean
+  updatedAt?: boolean
+  author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  category?: boolean | Prisma.Post$categoryArgs<ExtArgs>
+}, ExtArgs["result"]["post"]>
 
 export type PostSelectScalar = {
   id?: boolean
@@ -883,6 +910,14 @@ export type PostSelectScalar = {
 
 export type PostOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "slug" | "excerpt" | "content" | "coverImage" | "status" | "visibility" | "publishedAt" | "authorId" | "categoryId" | "createdAt" | "updatedAt", ExtArgs["result"]["post"]>
 export type PostInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  category?: boolean | Prisma.Post$categoryArgs<ExtArgs>
+}
+export type PostIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  category?: boolean | Prisma.Post$categoryArgs<ExtArgs>
+}
+export type PostIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   author?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   category?: boolean | Prisma.Post$categoryArgs<ExtArgs>
 }
@@ -1025,6 +1060,30 @@ export interface PostDelegate<ExtArgs extends runtime.Types.Extensions.InternalA
   createMany<T extends PostCreateManyArgs>(args?: Prisma.SelectSubset<T, PostCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<Prisma.BatchPayload>
 
   /**
+   * Create many Posts and returns the data saved in the database.
+   * @param {PostCreateManyAndReturnArgs} args - Arguments to create many Posts.
+   * @example
+   * // Create many Posts
+   * const post = await prisma.post.createManyAndReturn({
+   *   data: [
+   *     // ... provide data here
+   *   ]
+   * })
+   * 
+   * // Create many Posts and only return the `id`
+   * const postWithIdOnly = await prisma.post.createManyAndReturn({
+   *   select: { id: true },
+   *   data: [
+   *     // ... provide data here
+   *   ]
+   * })
+   * Note, that providing `undefined` is treated as the value not being there.
+   * Read more here: https://pris.ly/d/null-undefined
+   * 
+   */
+  createManyAndReturn<T extends PostCreateManyAndReturnArgs>(args?: Prisma.SelectSubset<T, PostCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PostPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+  /**
    * Delete a Post.
    * @param {PostDeleteArgs} args - Arguments to delete one Post.
    * @example
@@ -1087,6 +1146,36 @@ export interface PostDelegate<ExtArgs extends runtime.Types.Extensions.InternalA
    * 
    */
   updateMany<T extends PostUpdateManyArgs>(args: Prisma.SelectSubset<T, PostUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<Prisma.BatchPayload>
+
+  /**
+   * Update zero or more Posts and returns the data updated in the database.
+   * @param {PostUpdateManyAndReturnArgs} args - Arguments to update many Posts.
+   * @example
+   * // Update many Posts
+   * const post = await prisma.post.updateManyAndReturn({
+   *   where: {
+   *     // ... provide filter here
+   *   },
+   *   data: [
+   *     // ... provide data here
+   *   ]
+   * })
+   * 
+   * // Update zero or more Posts and only return the `id`
+   * const postWithIdOnly = await prisma.post.updateManyAndReturn({
+   *   select: { id: true },
+   *   where: {
+   *     // ... provide filter here
+   *   },
+   *   data: [
+   *     // ... provide data here
+   *   ]
+   * })
+   * Note, that providing `undefined` is treated as the value not being there.
+   * Read more here: https://pris.ly/d/null-undefined
+   * 
+   */
+  updateManyAndReturn<T extends PostUpdateManyAndReturnArgs>(args: Prisma.SelectSubset<T, PostUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PostPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
 
   /**
    * Create or update one Post.
@@ -1529,6 +1618,29 @@ export type PostCreateManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
 }
 
 /**
+ * Post createManyAndReturn
+ */
+export type PostCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Post
+   */
+  select?: Prisma.PostSelectCreateManyAndReturn<ExtArgs> | null
+  /**
+   * Omit specific fields from the Post
+   */
+  omit?: Prisma.PostOmit<ExtArgs> | null
+  /**
+   * The data used to create many Posts.
+   */
+  data: Prisma.PostCreateManyInput | Prisma.PostCreateManyInput[]
+  skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PostIncludeCreateManyAndReturn<ExtArgs> | null
+}
+
+/**
  * Post update
  */
 export type PostUpdateArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1570,6 +1682,36 @@ export type PostUpdateManyArgs<ExtArgs extends runtime.Types.Extensions.Internal
    * Limit how many Posts to update.
    */
   limit?: number
+}
+
+/**
+ * Post updateManyAndReturn
+ */
+export type PostUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Post
+   */
+  select?: Prisma.PostSelectUpdateManyAndReturn<ExtArgs> | null
+  /**
+   * Omit specific fields from the Post
+   */
+  omit?: Prisma.PostOmit<ExtArgs> | null
+  /**
+   * The data used to update Posts.
+   */
+  data: Prisma.XOR<Prisma.PostUpdateManyMutationInput, Prisma.PostUncheckedUpdateManyInput>
+  /**
+   * Filter which Posts to update
+   */
+  where?: Prisma.PostWhereInput
+  /**
+   * Limit how many Posts to update.
+   */
+  limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PostIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
