@@ -1,26 +1,509 @@
 @import "tailwindcss";
+@import "remixicon/fonts/remixicon.css";
+@import "./globals-cms.css";
+@plugin "@tailwindcss/typography";
+/* ========================================
+   DARK MODE CONFIGURATION
+======================================== */
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:where(.dark, .dark *));
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+/* ========================================
+   GLOBAL
+======================================== */
 
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    color-scheme: light;
+
+    /* Toast (react-hot-toast) */
+    --toast-bg: #ffffff;
+    --toast-fg: #0f172a;
+    --toast-border: #e2e8f0;
+    --toast-shadow: 0 12px 32px -12px rgb(15 23 42 / 0.3);
+  }
+
+  :root.dark {
+    color-scheme: dark;
+
+    --toast-bg: #0f172a;
+    --toast-fg: #e2e8f0;
+    --toast-border: #334155;
+    --toast-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.65);
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply m-0 min-h-screen;
+  }
+
+  button {
+    @apply cursor-pointer;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* ========================================
+   REUSABLE COMPONENTS
+======================================== */
+
+@layer components {
+  /* ======================================
+     LAYOUT
+  ====================================== */
+
+  .wrapper-page,
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-space {
+    @apply py-10;
+  }
+
+  .stack-y {
+    @apply flex flex-col gap-4;
+  }
+
+  .surface-card {
+    @apply overflow-hidden rounded-2xl
+      border border-slate-200
+      bg-white shadow-sm;
+
+    @variant dark {
+      @apply border-slate-800 bg-slate-900;
+    }
+  }
+
+  .text-muted {
+    @apply text-slate-500;
+
+    @variant dark {
+      @apply text-slate-400;
+    }
+  }
+
+  /* ======================================
+     BUTTONS
+  ====================================== */
+
+  .button-primary {
+    @apply inline-flex items-center justify-center gap-2
+      rounded-full bg-emerald-700
+      px-5 py-3 text-sm font-semibold text-white
+      transition-colors duration-150
+      hover:bg-emerald-800
+      disabled:pointer-events-none disabled:opacity-60;
+  }
+
+  .button-secondary {
+    @apply inline-flex items-center justify-center gap-2
+      rounded-full border border-slate-300
+      bg-white px-5 py-3
+      text-sm font-semibold text-slate-700
+      transition-all duration-150
+      hover:border-emerald-600
+      hover:bg-emerald-50
+      hover:text-emerald-700
+      disabled:pointer-events-none disabled:opacity-60;
+
+    @variant dark {
+      @apply border-slate-700
+        bg-slate-900 text-slate-200
+        hover:border-emerald-700
+        hover:bg-emerald-950
+        hover:text-emerald-300;
+    }
+  }
+
+  .button-block {
+    @apply w-full;
+  }
+
+  .focus-ring {
+    @apply outline-none
+      focus-visible:outline-2
+      focus-visible:outline-offset-4
+      focus-visible:outline-emerald-600;
+  }
+
+  .scroll-top-button {
+    @apply fixed bottom-5 right-4 z-40 inline-flex size-11
+      items-center justify-center rounded-full
+      border border-emerald-200 bg-white text-lg text-emerald-700
+      shadow-lg transition-colors
+      hover:bg-emerald-50
+      sm:bottom-8 sm:right-6;
+
+    @variant dark {
+      @apply border-emerald-900 bg-slate-900 text-emerald-400
+        shadow-black/40 hover:bg-slate-800;
+    }
+  }
+
+  /* ======================================
+     FORMS
+  ====================================== */
+
+  .form-field {
+    @apply block min-w-0;
+  }
+
+  .form-label {
+    @apply mb-2 block text-sm font-semibold text-slate-700;
+
+    @variant dark {
+      @apply text-slate-200;
+    }
+  }
+
+  .form-input,
+  .form-textarea,
+  .form-select {
+    @apply block w-full rounded-xl
+      border border-slate-200
+      bg-white px-3.5 py-3
+      text-sm text-slate-900
+      outline-none transition-colors
+      placeholder:text-slate-400
+      focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/10
+      disabled:cursor-not-allowed disabled:opacity-60;
+
+    @variant dark {
+      @apply border-slate-700 bg-slate-900 text-slate-100;
+    }
+  }
+
+  .form-textarea {
+    @apply resize-y leading-6;
+  }
+
+  .form-select {
+    @apply cursor-pointer pr-9;
+  }
+
+  .form-input-with-icon {
+    @apply pl-11;
+  }
+
+  .form-input-icon {
+    @apply pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg text-slate-400;
+  }
+
+  .form-hint {
+    @apply mt-2 text-xs leading-5 text-slate-500;
+
+    @variant dark {
+      @apply text-slate-400;
+    }
+  }
+
+  .form-actions {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
+  .form-check {
+    @apply flex items-center gap-2.5 text-sm font-medium text-slate-700;
+
+    @variant dark {
+      @apply text-slate-200;
+    }
+  }
+
+  .form-check-input {
+    @apply size-4 shrink-0 cursor-pointer rounded border-slate-300 accent-emerald-600;
+
+    @variant dark {
+      @apply border-slate-600 bg-slate-800;
+    }
+  }
+
+  /* ======================================
+     NAVBAR
+  ====================================== */
+
+  .site-header {
+    @apply sticky top-0 z-50
+      border-b border-slate-200/80
+      bg-white/90 backdrop-blur-xl;
+
+    @variant dark {
+      @apply border-slate-800/80 bg-slate-950/90;
+    }
+  }
+
+  .navbar-inner {
+    @apply flex min-h-[4.5rem]
+      items-center justify-between gap-4;
+  }
+
+  .site-brand {
+    @apply inline-flex shrink-0
+      items-center gap-3
+      text-slate-900 no-underline;
+
+    @variant dark {
+      @apply text-white;
+    }
+  }
+
+  .site-brand-mark {
+    @apply flex size-10 shrink-0
+      items-center justify-center
+      rounded-xl bg-emerald-700
+      text-xl text-white;
+  }
+
+  .site-brand-name {
+    @apply text-base font-bold
+      tracking-tight sm:text-lg;
+  }
+
+  .navbar-actions {
+    @apply flex shrink-0 items-center gap-2;
+  }
+
+  /* Theme Toggle */
+
+  .theme-toggle {
+    @apply inline-flex size-10
+      items-center justify-center
+      rounded-xl border border-slate-200
+      bg-white text-xl text-slate-600
+      transition-colors duration-150
+      hover:border-emerald-200
+      hover:bg-emerald-50
+      hover:text-emerald-700;
+
+    @variant dark {
+      @apply border-slate-700
+        bg-slate-900 text-slate-300
+        hover:border-emerald-800
+        hover:bg-emerald-950
+        hover:text-emerald-300;
+    }
+  }
+
+  /* Mobile Menu Button */
+
+  .mobile-menu-button {
+    @apply inline-flex size-10
+      items-center justify-center
+      rounded-xl text-xl text-slate-700
+      transition-colors duration-150
+      hover:bg-emerald-50
+      hover:text-emerald-700
+      lg:hidden;
+
+    @variant dark {
+      @apply text-slate-300
+        hover:bg-emerald-950
+        hover:text-emerald-300;
+    }
+  }
+
+  /* ======================================
+     FOOTER
+  ====================================== */
+
+  .site-footer {
+    @apply border-t border-slate-200
+      bg-slate-50;
+
+    @variant dark {
+      @apply border-slate-800 bg-slate-950;
+    }
+  }
+
+  .footer-inner {
+    @apply py-10 sm:py-12;
+  }
+
+  .footer-main {
+    @apply flex flex-col gap-8
+      md:flex-row md:items-start md:justify-between;
+  }
+
+  .footer-brand {
+    @apply max-w-sm;
+  }
+
+  .footer-description {
+    @apply mt-4 max-w-xs
+      text-sm leading-7 text-slate-500;
+
+    @variant dark {
+      @apply text-slate-400;
+    }
+  }
+
+  .footer-navigation {
+    @apply min-w-0;
+  }
+
+  .footer-heading {
+    @apply mb-4 text-sm
+      font-semibold text-slate-900;
+
+    @variant dark {
+      @apply text-white;
+    }
+  }
+
+  .footer-links {
+    @apply flex list-none flex-wrap
+      gap-x-5 gap-y-3 p-0;
+  }
+
+  .footer-link {
+    @apply text-sm text-slate-500
+      transition-colors duration-150
+      hover:text-emerald-700;
+
+    @variant dark {
+      @apply text-slate-400
+        hover:text-emerald-400;
+    }
+  }
+
+  .footer-bottom {
+    @apply mt-10 flex flex-col
+      gap-2 border-t border-slate-200
+      pt-6 sm:flex-row
+      sm:items-center sm:justify-between;
+
+    @variant dark {
+      @apply border-slate-800;
+    }
+  }
+
+  .footer-copyright {
+    @apply text-xs leading-6 text-slate-500;
+
+    @variant dark {
+      @apply text-slate-400;
+    }
+  }
+
+  .footer-note {
+    @apply text-xs text-slate-400;
+
+    @variant dark {
+      @apply text-slate-500;
+    }
+  }
+
+  .not-found-page {
+    @apply relative isolate flex min-h-[65svh]
+      items-center overflow-hidden
+      bg-slate-50 py-16 sm:py-20;
+
+    @variant dark {
+      @apply bg-slate-950;
+    }
+  }
+
+  .not-found-content {
+    @apply relative z-10 mx-auto
+      max-w-2xl text-center;
+  }
+
+  .not-found-glow {
+    @apply pointer-events-none absolute
+      size-96 rounded-full blur-3xl;
+  }
+
+  .not-found-glow-top {
+    @apply -right-32 -top-32 bg-emerald-100/70;
+
+    @variant dark {
+      @apply bg-emerald-900/20;
+    }
+  }
+
+  .not-found-glow-bottom {
+    @apply -bottom-40 -left-32 bg-emerald-50;
+
+    @variant dark {
+      @apply bg-emerald-950/40;
+    }
+  }
+
+  .not-found-illustration {
+    @apply relative mx-auto mb-8
+      flex size-32 items-center justify-center
+      rounded-[2rem] border border-emerald-100
+      bg-emerald-50 text-emerald-700
+      shadow-sm sm:size-40 sm:text-5xl;
+
+    @variant dark {
+      @apply border-emerald-900
+        bg-emerald-950 text-emerald-400;
+    }
+  }
+
+  .not-found-question {
+    @apply absolute -right-3 -top-3
+      flex size-10 items-center justify-center
+      rounded-full border-4 border-slate-50
+      bg-emerald-700 text-sm font-bold text-white;
+
+    @variant dark {
+      @apply border-slate-950 bg-emerald-600;
+    }
+  }
+
+  .not-found-code {
+    @apply mb-3 text-sm font-bold
+      uppercase tracking-[0.25em]
+      text-emerald-700;
+
+    @variant dark {
+      @apply text-emerald-400;
+    }
+  }
+
+  .not-found-title {
+    @apply text-3xl font-bold
+      tracking-tight text-slate-900
+      sm:text-4xl lg:text-5xl;
+
+    @variant dark {
+      @apply text-white;
+    }
+  }
+
+  .not-found-highlight {
+    @apply block text-emerald-700;
+
+    @variant dark {
+      @apply text-emerald-400;
+    }
+  }
+
+  .not-found-description {
+    @apply mx-auto mt-5 max-w-lg
+      text-sm leading-7 text-slate-500
+      sm:text-base;
+
+    @variant dark {
+      @apply text-slate-400;
+    }
+  }
+
+  .not-found-actions {
+    @apply mt-8 flex flex-col
+      items-center justify-center
+      gap-3 sm:flex-row;
+  }
+
+  .not-found-note {
+    @apply mt-10 text-xs text-slate-400;
+
+    @variant dark {
+      @apply text-slate-500;
+    }
+  }
 }
